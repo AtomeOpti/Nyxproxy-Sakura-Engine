@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyxproxy Engine — Developer Documentation & CLI Tool</title>
+    <style>
+        :root {
+            --bg-dark: #0d0914;
+            --panel-bg: rgba(20, 13, 33, 0.85);
+            --panel-border: rgba(169, 125, 251, 0.15);
+            --pink-accent: #ff5fa8;
+            --pink-glow: rgba(255, 95, 168, 0.15);
+            --mint-accent: #3dffa0;
+            --mint-glow: rgba(61, 255, 160, 0.15);
+            --purple-accent: #a97dfb;
+            --orange-hit: #ff9142;
+            --red-alert: #ff5f5f;
+            --text-main: #f1e9ff;
+            --text-sub: #9a8eb7;
+            --code-bg: #09060f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+            padding-bottom: 60px;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        code, pre, .terminal-font {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        .container {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        nav {
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(13, 9, 20, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+
+        .brand {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+            transition: opacity 0.2s;
+        }
+
+        .brand:hover {
+            opacity: 0.85;
+        }
+
+        .brand-badge {
+            font-size: 0.75rem;
+            background: var(--pink-glow);
+            color: var(--pink-accent);
+            border: 1px solid rgba(255, 95, 168, 0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-main);
+        }
+
+        .nav-btn-gun {
+            color: var(--pink-accent) !important;
+            border: 1px solid rgba(255, 95, 168, 0.4);
+            padding: 4px 12px;
+            border-radius: 6px;
+            background: var(--pink-glow);
+            transition: all 0.2s ease !important;
+        }
+
+        .nav-btn-gun:hover {
+            background: rgba(255, 95, 168, 0.3) !important;
+            border-color: var(--pink-accent);
+            box-shadow: 0 0 10px rgba(255, 95, 168, 0.2);
+        }
+
+        .hero {
+            padding: 70px 0 40px;
+            text-align: center;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--purple-accent);
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: 2.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.8px;
+            line-height: 1.25;
+            max-width: 800px;
+            margin: 0 auto 18px;
+        }
+
+        .hero h1 span.highlight {
+            color: var(--pink-accent);
+            background: linear-gradient(135deg, #ff5fa8 0%, #a97dfb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.05rem;
+            color: var(--text-sub);
+            max-width: 680px;
+            margin: 0 auto 12px;
+            font-weight: 400;
+        }
+
+        .hero-subtext {
+            font-size: 0.82rem;
+            color: var(--text-sub);
+            opacity: 0.75;
+            margin-bottom: 28px;
+        }
+
+        /* --- STICKY FLOATING DOWNLOAD BUTTON --- */
+        .btn-sticky-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+        }
+
+        .btn-primary {
+            background-color: var(--pink-accent);
+            color: #0d0914;
+            border: 1px solid var(--pink-accent);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(255, 95, 168, 0.4);
+            backdrop-filter: blur(8px);
+        }
+
+        .btn-primary:hover {
+            background-color: #ff75b5;
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 12px 30px rgba(255, 95, 168, 0.6);
+        }
+
+        .cli-3d-wrapper {
+            perspective: 1200px;
+            margin: 50px auto 30px;
+            padding: 10px 0;
+        }
+
+        .cli-window {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            text-align: left;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(0deg) rotateY(0deg) scale(1);
+            transition: transform 0.15s ease-out, box-shadow 0.3s ease, border-color 0.3s ease;
+            will-change: transform, box-shadow;
+        }
+
+        .cli-window.is-hovered {
+            border-color: rgba(255, 95, 168, 0.35);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.7),
+                0 0 40px rgba(255, 95, 168, 0.18);
+        }
+
+        .cli-header-bar {
+            background-color: rgba(9, 6, 15, 0.7);
+            padding: 12px 18px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot { height: 11px; width: 11px; border-radius: 50%; display: inline-block; }
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+
+        .cli-body {
+            padding: 22px;
+            font-size: 0.88rem;
+            min-height: 290px;
+        }
+
+        .status-panel {
+            background: rgba(9, 6, 15, 0.5);
+            border: 1px solid var(--panel-border);
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-bottom: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .status-panel.hit-pulse {
+            border-color: var(--mint-accent);
+            box-shadow: inset 0 0 12px rgba(61, 255, 160, 0.12);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .cli-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cli-table th {
+            text-align: left;
+            color: var(--purple-accent);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .cli-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(41, 30, 62, 0.4);
+            font-size: 0.85rem;
+        }
+
+        .cli-table tr.new-row {
+            animation: fadeInRow 0.4s ease-out;
+        }
+
+        @keyframes fadeInRow {
+            from { opacity: 0; background-color: var(--mint-glow); transform: translateY(-4px); }
+            to { opacity: 1; background-color: transparent; transform: translateY(0); }
+        }
+
+        .section-title {
+            text-align: center;
+            color: var(--text-main);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 80px 0 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            max-width: 550px;
+            margin: 0 auto 40px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .spec-card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 24px;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+            position: relative;
+        }
+
+        .spec-card:hover {
+            border-color: rgba(169, 125, 251, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .spec-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 6px;
+            background: var(--code-bg);
+            border: 1px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pink-accent);
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+            overflow: hidden;
+        }
+
+        .spec-card h3 {
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .spec-card p {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .faq-accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .faq-item:hover {
+            border-color: rgba(169, 125, 251, 0.3);
+        }
+
+        .faq-question {
+            width: 100%;
+            text-align: left;
+            padding: 18px 20px;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 0.98rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .faq-icon {
+            color: var(--purple-accent);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            background-color: rgba(9, 6, 15, 0.4);
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 250px;
+            padding: 0 20px 18px;
+        }
+
+        .faq-answer p {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .faq-answer a {
+            color: var(--pink-accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .faq-answer a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            border-top: 1px solid var(--panel-border);
+            text-align: center;
+            padding: 32px 0;
+            margin-top: 90px;
+            color: var(--text-sub);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--pink-accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .c-pink { color: var(--pink-accent); }
+        .c-mint { color: var(--mint-accent); }
+        .c-purple { color: var(--purple-accent); }
+        .c-orange { color: var(--orange-hit); }
+        .c-red { color: var(--red-alert); }
+        .c-sub { color: var(--text-sub); }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Bouton Download Persistant (Fixed/Sticky Bottom-Right) -->
+    <div class="btn-sticky-container">
+        <a href="https://github.com/AtomeOpti/Nyxproxy-Sakura-Engine/releases/download/up/Nyxproxy.zip" class="btn-primary">
+            <span>Download Executable (.zip)</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        </a>
+    </div>
+
+    <nav>
+        <div class="container nav-inner">
+            <a href="https://github.com/AtomeOpti/Nyxproxy-Sakura-Engine" target="_blank" rel="noopener noreferrer" class="brand">
+                <span>Nyxproxy Engine</span>
+                <span class="brand-badge">v2.0 CLI</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Architecture</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="https://guns.lol/thxbutno" target="_blank" rel="noopener noreferrer" class="nav-btn-gun">Guns.lol 🔗</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="hero">
+            <div class="hero-tag">
+                <span>⚡ Threaded Proxy Scraper & Verifier Engine</span>
+            </div>
+            <h1>High-throughput proxy validation with <span class="highlight">Rich Terminal UI</span></h1>
+            <p>A lightweight, asynchronous CLI tool built for developers needing fast extraction, latency checking, and live visual monitoring.</p>
+            <p class="hero-subtext">📦 Download the ZIP archive containing the standalone executable and configuration files.</p>
+
+            <div class="cli-3d-wrapper">
+                <div class="cli-window terminal-font" id="cli-window">
+                    <div class="cli-header-bar">
+                        <div class="window-controls">
+                            <span class="dot dot-red"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <span>NyxproxyEngine.exe — Nyxproxy Engine</span>
+                        <span style="font-size: 0.75rem; color: var(--purple-accent);">● LIVE SIMULATION</span>
+                    </div>
+                    <div class="cli-body">
+                        <div class="status-panel" id="status-panel">
+                            <div class="status-item">
+                                <span id="stickman-icon" class="c-pink">(o_o)/</span>
+                                <span id="status-text" class="c-purple" style="font-weight: 600;">Scanning proxy streams...</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="c-sub">HITS:</span>
+                                <span class="c-mint" id="hit-count" style="font-weight: 600;">0</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="c-sub">SPEED:</span>
+                                <span class="c-orange" id="speed-val" style="font-weight: 600;">32.0</span> req/s
+                            </div>
+                            <div class="status-item">
+                                <span class="c-sub">TIME:</span>
+                                <span class="c-sub" id="timer-val">0s</span>
+                            </div>
+                        </div>
+
+                        <table class="cli-table">
+                            <thead>
+                                <tr>
+                                    <th>IP Address</th>
+                                    <th>Port</th>
+                                    <th>Protocol</th>
+                                    <th>Country</th>
+                                    <th>Anonymity</th>
+                                    <th>Latency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="proxy-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <h2 class="section-title" id="features">Engine Specifications</h2>
+        <p class="section-subtitle">Designed for efficiency, clean terminal rendering, and simple extensibility.</p>
+        
+        <div class="grid-3">
+            <div class="spec-card">
+                <div class="spec-icon">⚡</div>
+                <h3>Multithreaded Checker</h3>
+                <p>Utilizes worker pools to scrape multiple public endpoints and check connectivity concurrently without blocking your execution loop.</p>
+            </div>
+            <div class="spec-card">
+                <div class="spec-icon">💻</div>
+                <h3>Zero-Flicker Rich UI</h3>
+                <p>Constructed with Python's <code>rich.live.Live</code> and structured layout tables to eliminate display tearing and ANSI syntax bugs.</p>
+            </div>
+            <div class="spec-card">
+                <div class="spec-icon">📂</div>
+                <h3>Structured Export</h3>
+                <p>Automatically filters latency and anonymity attributes. Export validated hits cleanly into standard <code>.txt</code> or formatted <code>.csv</code> files.</p>
+            </div>
+        </div>
+
+        <h2 class="section-title" id="faq">Frequently Asked Questions</h2>
+        <p class="section-subtitle">High-throughput benchmark, request performance, anonymity checks, and target filtering.</p>
+
+        <div class="faq-accordion">
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>Is the executable safe? Can I see the VirusTotal analysis?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Yes, security and transparency are priorities. You can review the full automated malware analysis and file integrity scan directly on VirusTotal here: <a href="https://www.virustotal.com/gui/file/a9c056189b560853a4fa3c97f5900dd8834608f2163932903051f28846bfccc0/detection" target="_blank" rel="noopener noreferrer">View VirusTotal Report ↗</a>.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>What request speed and throughput (RPS) can the engine reach?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Depending on your network bandwidth and thread allocation (e.g., 50–100 workers), the engine easily scales from <strong>50 to 300+ requests per second (RPS)</strong>. Built with non-blocking thread management, it verifies thousands of endpoints in under a minute without memory leaks.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>How does the engine verify true Anonymity levels (Elite vs. Transparent)?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>During the verification handshake, the engine inspects HTTP headers like <code>X-Forwarded-For</code>, <code>Via</code>, and <code>Remote-Addr</code>. Proxies revealing zero client IP signatures are categorized as <strong>Elite / High-Anonymous</strong>, while those exposing headers are flagged as Transparent or Medium.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>How are proxies validated against anti-DDoS protections (Cloudflare / WAF)?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>The checking pipeline measures real-time response latency and HTTP status flags (200 OK vs. 403/503 Cloudflare challenges). You can configure target test endpoints directly inside <code>scraper.py</code> to ensure captured proxies can bypass strict rate-limiters and Web Application Firewalls.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>How does latency profiling and performance filtering work?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Latency is calculated using precise Round-Trip Time (RTT) benchmarks per ping. Results are dynamically color-coded: ultra-fast nodes (<strong>&lt; 500 ms</strong>) highlight in mint green, acceptable routes in orange, and slow or degraded endpoints in red.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>Can I adjust worker threads, request timeouts, and target endpoints?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Yes. Worker counts can be prompted directly in the CLI or declared in your environment. Custom test URLs, connection timeout thresholds, and target headers can be customized inside <code>scraper.py</code> for specialized target checking.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>Which proxy protocols and export formats are supported?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>The scraper pulls and categorizes <strong>HTTP, HTTPS, SOCKS4, and SOCKS5</strong> protocols. Once validated, hits can be instantly exported into raw <code>.txt</code> lists (IP:Port) or fully detailed <code>.csv</code> sheets containing country, latency, and anonymity metrics.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>Nyxproxy Engine v2.0 — <a href="https://github.com/AtomeOpti/Nyxproxy-Sakura-Engine" target="_blank" rel="noopener noreferrer">GitHub Source Repository</a> | <a href="https://guns.lol/thxbutno" target="_blank" rel="noopener noreferrer">guns.lol/thxbutno</a></p>
+        </div>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.radius = Math.random() * 2 + 0.5;
+                this.color = Math.random() > 0.5 ? '#ff5fa8' : '#a97dfb';
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+            }
+        }
+
+        const particles = Array.from({ length: 50 }, () => new Particle());
+
+        function animateBg() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.save();
+                        ctx.globalAlpha = (1 - dist / 120) * 0.15;
+                        ctx.strokeStyle = '#a97dfb';
+                        ctx.lineWidth = 0.8;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+            }
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animateBg);
+        }
+
+        animateBg();
+
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const item = button.parentElement;
+                item.classList.toggle('active');
+            });
+        });
+
+        const cliWin = document.getElementById('cli-window');
+
+        cliWin.addEventListener('mousemove', (e) => {
+            const rect = cliWin.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((y - centerY) / centerY) * -10;
+            const rotateY = ((x - centerX) / centerX) * 10;
+
+            cliWin.classList.add('is-hovered');
+            cliWin.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+        });
+
+        cliWin.addEventListener('mouseleave', () => {
+            cliWin.classList.remove('is-hovered');
+            cliWin.style.transition = 'transform 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease';
+            cliWin.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+        });
+
+        cliWin.addEventListener('mouseenter', () => {
+            cliWin.style.transition = 'transform 0.1s ease-out, box-shadow 0.3s ease, border-color 0.3s ease';
+        });
+
+        function maskIP(ip) {
+            const parts = ip.split('.');
+            if (parts.length === 4) {
+                return `${parts[0]}.${parts[1]}.***.***`;
+            }
+            return ip;
+        }
+
+        const sampleProxies = [
+            { ip: "185.220.101.5", port: "9050", proto: "SOCKS5", country: "DE", anon: "Elite", lat: 142 },
+            { ip: "45.142.214.8", port: "8080", proto: "HTTP", country: "US", anon: "Elite", lat: 380 },
+            { ip: "103.152.112.2", port: "3128", proto: "HTTPS", country: "JP", anon: "High", lat: 1150 },
+            { ip: "194.26.29.110", port: "1080", proto: "SOCKS4", country: "FR", anon: "Elite", lat: 88 },
+            { ip: "91.200.114.62", port: "80", proto: "HTTP", country: "GB", anon: "Medium", lat: 620 },
+            { ip: "178.62.204.22", port: "8080", proto: "HTTPS", country: "NL", anon: "Elite", lat: 210 },
+            { ip: "200.105.21.14", port: "999", proto: "SOCKS5", country: "BR", anon: "High", lat: 890 }
+        ];
+
+        const walkFrames = ["(o_o)/", " (o_o) ", " \\(o_o)", " (o_o) "];
+        const hitFrames = ["＼(★_★)／", " (★_★)v ", " └(★_★)┐", " v(★_★) "];
+
+        let hits = 0;
+        let seconds = 0;
+        let frameIdx = 0;
+        let pulseTimer = 0;
+        let activeRows = [];
+
+        const tableBody = document.getElementById('proxy-table-body');
+        const hitCountEl = document.getElementById('hit-count');
+        const timerEl = document.getElementById('timer-val');
+        const stickmanEl = document.getElementById('stickman-icon');
+        const statusTextEl = document.getElementById('status-text');
+        const statusPanelEl = document.getElementById('status-panel');
+
+        setInterval(() => {
+            seconds++;
+            timerEl.innerText = seconds + 's';
+        }, 1000);
+
+        setInterval(() => {
+            frameIdx++;
+            
+            if (Math.random() > 0.65) {
+                hits++;
+                pulseTimer = 4;
+                hitCountEl.innerText = hits;
+
+                const p = sampleProxies[Math.floor(Math.random() * sampleProxies.length)];
+                const rawIP = p.ip.replace(/\.\d+$/, '.' + Math.floor(Math.random() * 250 + 1));
+                const newProxy = { ...p, ip: maskIP(rawIP) };
+
+                activeRows.push(newProxy);
+                if (activeRows.length > 5) activeRows.shift();
+
+                renderTable();
+            }
+
+            if (pulseTimer > 0) {
+                pulseTimer--;
+                stickmanEl.innerText = hitFrames[frameIdx % hitFrames.length];
+                stickmanEl.className = "c-pink";
+                statusTextEl.innerText = "✨ NEW HIT DETECTED!";
+                statusTextEl.className = "c-mint";
+                statusPanelEl.classList.add('hit-pulse');
+            } else {
+                stickmanEl.innerText = walkFrames[frameIdx % walkFrames.length];
+                stickmanEl.className = "c-pink";
+                statusTextEl.innerText = "Scanning proxy streams...";
+                statusTextEl.className = "c-purple";
+                statusPanelEl.classList.remove('hit-pulse');
+            }
+        }, 350);
+
+        function renderTable() {
+            tableBody.innerHTML = activeRows.map((p, index) => {
+                let anonClass = (p.anon === 'Elite' || p.anon === 'High') ? 'c-mint' : 'c-orange';
+                let latClass = p.lat < 300 ? 'c-mint' : (p.lat < 1000 ? 'c-orange' : 'c-red');
+                let isLatest = index === activeRows.length - 1 ? 'new-row' : '';
+
+                return `
+                    <tr class="${isLatest}">
+                        <td class="terminal-font" style="font-weight: 500;">${p.ip}</td>
+                        <td class="c-sub">${p.port}</td>
+                        <td class="c-pink">${p.proto}</td>
+                        <td>${p.country}</td>
+                        <td class="${anonClass}">${p.anon}</td>
+                        <td class="${latClass}">${p.lat} ms</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
