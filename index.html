@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyxproxy Sakura Engine — Developer Documentation & CLI Tool</title>
+    <title>Nyxproxy Engine — Developer Documentation & CLI Tool</title>
     <style>
         :root {
             --bg-dark: #0d0914;
-            --panel-bg: #140d21;
-            --panel-border: #291e3e;
+            --panel-bg: rgba(20, 13, 33, 0.85);
+            --panel-border: rgba(169, 125, 251, 0.15);
             --pink-accent: #ff5fa8;
             --pink-glow: rgba(255, 95, 168, 0.15);
             --mint-accent: #3dffa0;
@@ -33,10 +33,18 @@
             color: var(--text-main);
             line-height: 1.6;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 15% 20%, rgba(169, 125, 251, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 85% 60%, rgba(255, 95, 168, 0.04) 0%, transparent 40%);
-            background-attachment: fixed;
+            position: relative;
+            padding-bottom: 60px;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
         }
 
         code, pre, .terminal-font {
@@ -175,51 +183,69 @@
             margin-bottom: 28px;
         }
 
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 10px 22px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        /* --- STICKY FLOATING DOWNLOAD BUTTON --- */
+        .btn-sticky-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
         }
 
         .btn-primary {
             background-color: var(--pink-accent);
             color: #0d0914;
             border: 1px solid var(--pink-accent);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(255, 95, 168, 0.4);
+            backdrop-filter: blur(8px);
         }
 
         .btn-primary:hover {
             background-color: #ff75b5;
-            box-shadow: 0 4px 20px rgba(255, 95, 168, 0.25);
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 12px 30px rgba(255, 95, 168, 0.6);
+        }
+
+        .cli-3d-wrapper {
+            perspective: 1200px;
+            margin: 50px auto 30px;
+            padding: 10px 0;
         }
 
         .cli-window {
             background-color: var(--panel-bg);
             border: 1px solid var(--panel-border);
-            border-radius: 10px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            margin: 45px auto 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
             overflow: hidden;
             text-align: left;
             position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(0deg) rotateY(0deg) scale(1);
+            transition: transform 0.15s ease-out, box-shadow 0.3s ease, border-color 0.3s ease;
+            will-change: transform, box-shadow;
+        }
+
+        .cli-window.is-hovered {
+            border-color: rgba(255, 95, 168, 0.35);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.7),
+                0 0 40px rgba(255, 95, 168, 0.18);
         }
 
         .cli-header-bar {
             background-color: rgba(9, 6, 15, 0.7);
-            padding: 10px 16px;
+            padding: 12px 18px;
             font-size: 0.8rem;
             color: var(--text-sub);
             display: flex;
@@ -239,13 +265,13 @@
         .dot-green { background-color: #27c93f; }
 
         .cli-body {
-            padding: 20px;
+            padding: 22px;
             font-size: 0.88rem;
             min-height: 290px;
         }
 
         .status-panel {
-            background: rgba(9, 6, 15, 0.6);
+            background: rgba(9, 6, 15, 0.5);
             border: 1px solid var(--panel-border);
             padding: 10px 16px;
             border-radius: 6px;
@@ -254,12 +280,12 @@
             flex-wrap: wrap;
             gap: 20px;
             align-items: center;
-            transition: border-color 0.3s ease;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
         }
 
         .status-panel.hit-pulse {
             border-color: var(--mint-accent);
-            box-shadow: inset 0 0 10px rgba(61, 255, 160, 0.1);
+            box-shadow: inset 0 0 12px rgba(61, 255, 160, 0.12);
         }
 
         .status-item {
@@ -327,16 +353,18 @@
             border: 1px solid var(--panel-border);
             border-radius: 8px;
             padding: 24px;
-            transition: border-color 0.2s ease;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+            position: relative;
         }
 
         .spec-card:hover {
             border-color: rgba(169, 125, 251, 0.4);
+            transform: translateY(-3px);
         }
 
         .spec-icon {
-            width: 36px;
-            height: 36px;
+            width: 42px;
+            height: 42px;
             border-radius: 6px;
             background: var(--code-bg);
             border: 1px solid var(--panel-border);
@@ -346,6 +374,7 @@
             color: var(--pink-accent);
             margin-bottom: 16px;
             font-size: 1.1rem;
+            overflow: hidden;
         }
 
         .spec-card h3 {
@@ -359,27 +388,6 @@
             color: var(--text-sub);
             font-size: 0.9rem;
             line-height: 1.5;
-        }
-
-        .install-container {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 40px;
-        }
-
-        .code-block {
-            background-color: var(--code-bg);
-            border: 1px solid var(--panel-border);
-            padding: 14px 16px;
-            border-radius: 6px;
-            color: var(--text-main);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            font-size: 0.88rem;
         }
 
         .faq-accordion {
@@ -444,6 +452,16 @@
             line-height: 1.6;
         }
 
+        .faq-answer a {
+            color: var(--pink-accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .faq-answer a:hover {
+            text-decoration: underline;
+        }
+
         footer {
             border-top: 1px solid var(--panel-border);
             text-align: center;
@@ -472,15 +490,24 @@
 </head>
 <body>
 
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Bouton Download Persistant (Fixed/Sticky Bottom-Right) -->
+    <div class="btn-sticky-container">
+        <a href="https://github.com/AtomeOpti/Nyxproxy-Sakura-Engine/releases/download/up/Nyxproxy.zip" class="btn-primary">
+            <span>Download Executable (.zip)</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        </a>
+    </div>
+
     <nav>
         <div class="container nav-inner">
             <a href="https://github.com/AtomeOpti/Nyxproxy-Sakura-Engine" target="_blank" rel="noopener noreferrer" class="brand">
-                <span>🌸 Nyxproxy Sakura</span>
+                <span>Nyxproxy Engine</span>
                 <span class="brand-badge">v2.0 CLI</span>
             </a>
             <ul class="nav-links">
                 <li><a href="#features">Architecture</a></li>
-                <li><a href="#config">Config</a></li>
                 <li><a href="#faq">FAQ</a></li>
                 <li><a href="https://guns.lol/thxbutno" target="_blank" rel="noopener noreferrer" class="nav-btn-gun">Guns.lol 🔗</a></li>
             </ul>
@@ -488,7 +515,6 @@
     </nav>
 
     <div class="container">
-        <!-- Hero Section -->
         <section class="hero">
             <div class="hero-tag">
                 <span>⚡ Threaded Proxy Scraper & Verifier Engine</span>
@@ -496,66 +522,57 @@
             <h1>High-throughput proxy validation with <span class="highlight">Rich Terminal UI</span></h1>
             <p>A lightweight, asynchronous CLI tool built for developers needing fast extraction, latency checking, and live visual monitoring.</p>
             <p class="hero-subtext">📦 Download the ZIP archive containing the standalone executable and configuration files.</p>
-            
-            <div class="btn-group">
-                <!-- Single ZIP Download Button containing the executable -->
-                <a href="Nyxproxy-Sakura.zip" download class="btn btn-primary">
-                    <span>Download Executable (.zip)</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                </a>
-            </div>
 
-            <!-- Interactive CLI Simulation -->
-            <div class="cli-window terminal-font" id="demo">
-                <div class="cli-header-bar">
-                    <div class="window-controls">
-                        <span class="dot dot-red"></span>
-                        <span class="dot dot-yellow"></span>
-                        <span class="dot dot-green"></span>
+            <div class="cli-3d-wrapper">
+                <div class="cli-window terminal-font" id="cli-window">
+                    <div class="cli-header-bar">
+                        <div class="window-controls">
+                            <span class="dot dot-red"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <span>NyxproxyEngine.exe — Nyxproxy Engine</span>
+                        <span style="font-size: 0.75rem; color: var(--purple-accent);">● LIVE SIMULATION</span>
                     </div>
-                    <span>NyxproxySakura.exe — Nyxproxy Sakura Engine</span>
-                    <span style="font-size: 0.75rem; color: var(--purple-accent);">● LIVE SIMULATION</span>
-                </div>
-                <div class="cli-body">
-                    <div class="status-panel" id="status-panel">
-                        <div class="status-item">
-                            <span id="stickman-icon" class="c-pink">(o_o)/</span>
-                            <span id="status-text" class="c-purple" style="font-weight: 600;">Scanning proxy streams...</span>
+                    <div class="cli-body">
+                        <div class="status-panel" id="status-panel">
+                            <div class="status-item">
+                                <span id="stickman-icon" class="c-pink">(o_o)/</span>
+                                <span id="status-text" class="c-purple" style="font-weight: 600;">Scanning proxy streams...</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="c-sub">HITS:</span>
+                                <span class="c-mint" id="hit-count" style="font-weight: 600;">0</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="c-sub">SPEED:</span>
+                                <span class="c-orange" id="speed-val" style="font-weight: 600;">32.0</span> req/s
+                            </div>
+                            <div class="status-item">
+                                <span class="c-sub">TIME:</span>
+                                <span class="c-sub" id="timer-val">0s</span>
+                            </div>
                         </div>
-                        <div class="status-item">
-                            <span class="c-sub">HITS:</span>
-                            <span class="c-mint" id="hit-count" style="font-weight: 600;">0</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="c-sub">SPEED:</span>
-                            <span class="c-orange" id="speed-val" style="font-weight: 600;">32.0</span> req/s
-                        </div>
-                        <div class="status-item">
-                            <span class="c-sub">TIME:</span>
-                            <span class="c-sub" id="timer-val">0s</span>
-                        </div>
-                    </div>
 
-                    <table class="cli-table">
-                        <thead>
-                            <tr>
-                                <th>IP Address</th>
-                                <th>Port</th>
-                                <th>Protocol</th>
-                                <th>Country</th>
-                                <th>Anonymity</th>
-                                <th>Latency</th>
-                            </tr>
-                        </thead>
-                        <tbody id="proxy-table-body">
-                            <!-- Dynamic Rows Injected by JS -->
-                        </tbody>
-                    </table>
+                        <table class="cli-table">
+                            <thead>
+                                <tr>
+                                    <th>IP Address</th>
+                                    <th>Port</th>
+                                    <th>Protocol</th>
+                                    <th>Country</th>
+                                    <th>Anonymity</th>
+                                    <th>Latency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="proxy-table-body">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Technical Architecture Features -->
         <h2 class="section-title" id="features">Engine Specifications</h2>
         <p class="section-subtitle">Designed for efficiency, clean terminal rendering, and simple extensibility.</p>
         
@@ -566,7 +583,7 @@
                 <p>Utilizes worker pools to scrape multiple public endpoints and check connectivity concurrently without blocking your execution loop.</p>
             </div>
             <div class="spec-card">
-                <div class="spec-icon">🌸</div>
+                <div class="spec-icon">💻</div>
                 <h3>Zero-Flicker Rich UI</h3>
                 <p>Constructed with Python's <code>rich.live.Live</code> and structured layout tables to eliminate display tearing and ANSI syntax bugs.</p>
             </div>
@@ -577,62 +594,77 @@
             </div>
         </div>
 
-        <!-- Configuration & Options Section -->
-        <h2 class="section-title" id="config">Configuration & Options</h2>
-        <p class="section-subtitle">Customizable parameters directly editable inside the configuration file.</p>
-
-        <div class="install-container">
-            <div class="code-block terminal-font" style="margin: 0; background: var(--code-bg); padding: 20px; border: none; display: block; line-height: 1.8;">
-                <span class="c-sub">// settings.json — Parameters</span><br><br>
-                <span class="c-pink">"max_threads"</span>: <span class="c-mint">50</span>,<br>
-                <span class="c-pink">"timeout_seconds"</span>: <span class="c-mint">5</span>,<br>
-                <span class="c-pink">"protocols"</span>: [<span class="c-orange">"HTTP"</span>, <span class="c-orange">"HTTPS"</span>, <span class="c-orange">"SOCKS5"</span>],<br>
-                <span class="c-pink">"auto_export_csv"</span>: <span class="c-purple">true</span>
-            </div>
-        </div>
-
-        <!-- Technical FAQ -->
         <h2 class="section-title" id="faq">Frequently Asked Questions</h2>
-        <p class="section-subtitle">Technical details regarding configuration, protocols, and performance.</p>
+        <p class="section-subtitle">High-throughput benchmark, request performance, anonymity checks, and target filtering.</p>
 
         <div class="faq-accordion">
             <div class="faq-item">
                 <button class="faq-question">
-                    <span>How do I run the application from the .ZIP file?</span>
+                    <span>Is the executable safe? Can I see the VirusTotal analysis?</span>
                     <span class="faq-icon">▼</span>
                 </button>
                 <div class="faq-answer">
-                    <p>Extract the downloaded <code>.zip</code> archive to your preferred directory and launch the standalone executable (<code>NyxproxySakura.exe</code>) inside. No Python environment required.</p>
+                    <p>Yes, security and transparency are priorities. You can review the full automated malware analysis and file integrity scan directly on VirusTotal here: <a href="https://www.virustotal.com/gui/file/a9c056189b560853a4fa3c97f5900dd8834608f2163932903051f28846bfccc0/detection" target="_blank" rel="noopener noreferrer">View VirusTotal Report ↗</a>.</p>
                 </div>
             </div>
 
             <div class="faq-item">
                 <button class="faq-question">
-                    <span>How does the live CLI rendering avoid text artifacts?</span>
+                    <span>What request speed and throughput (RPS) can the engine reach?</span>
                     <span class="faq-icon">▼</span>
                 </button>
                 <div class="faq-answer">
-                    <p>The application relies on <code>rich.text.Text()</code> objects and layout panels rather than raw ANSI string concatenation. This prevents markup tags from leaking when terminal buffers refresh rapidly.</p>
+                    <p>Depending on your network bandwidth and thread allocation (e.g., 50–100 workers), the engine easily scales from <strong>50 to 300+ requests per second (RPS)</strong>. Built with non-blocking thread management, it verifies thousands of endpoints in under a minute without memory leaks.</p>
                 </div>
             </div>
 
             <div class="faq-item">
                 <button class="faq-question">
-                    <span>Can I adjust thread counts and timeout limits?</span>
+                    <span>How does the engine verify true Anonymity levels (Elite vs. Transparent)?</span>
                     <span class="faq-icon">▼</span>
                 </button>
                 <div class="faq-answer">
-                    <p>Yes. You can edit your preferred worker thread allocation and request timeout parameters directly within the <code>settings.json</code> configuration file.</p>
+                    <p>During the verification handshake, the engine inspects HTTP headers like <code>X-Forwarded-For</code>, <code>Via</code>, and <code>Remote-Addr</code>. Proxies revealing zero client IP signatures are categorized as <strong>Elite / High-Anonymous</strong>, while those exposing headers are flagged as Transparent or Medium.</p>
                 </div>
             </div>
 
             <div class="faq-item">
                 <button class="faq-question">
-                    <span>Which proxy protocols are supported?</span>
+                    <span>How are proxies validated against anti-DDoS protections (Cloudflare / WAF)?</span>
                     <span class="faq-icon">▼</span>
                 </button>
                 <div class="faq-answer">
-                    <p>The scraper pulls and categorizes HTTP, HTTPS, SOCKS4, and SOCKS5 proxies while identifying anonymity levels (Elite, High, Transparent) based on header disclosures.</p>
+                    <p>The checking pipeline measures real-time response latency and HTTP status flags (200 OK vs. 403/503 Cloudflare challenges). You can configure target test endpoints directly inside <code>scraper.py</code> to ensure captured proxies can bypass strict rate-limiters and Web Application Firewalls.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>How does latency profiling and performance filtering work?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Latency is calculated using precise Round-Trip Time (RTT) benchmarks per ping. Results are dynamically color-coded: ultra-fast nodes (<strong>&lt; 500 ms</strong>) highlight in mint green, acceptable routes in orange, and slow or degraded endpoints in red.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>Can I adjust worker threads, request timeouts, and target endpoints?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Yes. Worker counts can be prompted directly in the CLI or declared in your environment. Custom test URLs, connection timeout thresholds, and target headers can be customized inside <code>scraper.py</code> for specialized target checking.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    <span>Which proxy protocols and export formats are supported?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>The scraper pulls and categorizes <strong>HTTP, HTTPS, SOCKS4, and SOCKS5</strong> protocols. Once validated, hits can be instantly exported into raw <code>.txt</code> lists (IP:Port) or fully detailed <code>.csv</code> sheets containing country, latency, and anonymity metrics.</p>
                 </div>
             </div>
         </div>
@@ -640,17 +672,123 @@
 
     <footer>
         <div class="container">
-            <p>Nyxproxy Sakura Engine v2.0 — <a href="https://github.com/AtomeOpti/Nyxproxy-Sakura-Engine" target="_blank" rel="noopener noreferrer">GitHub Source Repository</a> | <a href="https://guns.lol/thxbutno" target="_blank" rel="noopener noreferrer">guns.lol/thxbutno</a></p>
+            <p>Nyxproxy Engine v2.0 — <a href="https://github.com/AtomeOpti/Nyxproxy-Sakura-Engine" target="_blank" rel="noopener noreferrer">GitHub Source Repository</a> | <a href="https://guns.lol/thxbutno" target="_blank" rel="noopener noreferrer">guns.lol/thxbutno</a></p>
         </div>
     </footer>
 
-    <!-- Interactive Simulation & Accordion Script -->
     <script>
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.radius = Math.random() * 2 + 0.5;
+                this.color = Math.random() > 0.5 ? '#ff5fa8' : '#a97dfb';
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+            }
+        }
+
+        const particles = Array.from({ length: 50 }, () => new Particle());
+
+        function animateBg() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.save();
+                        ctx.globalAlpha = (1 - dist / 120) * 0.15;
+                        ctx.strokeStyle = '#a97dfb';
+                        ctx.lineWidth = 0.8;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+            }
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animateBg);
+        }
+
+        animateBg();
+
         document.querySelectorAll('.faq-question').forEach(button => {
             button.addEventListener('click', () => {
                 const item = button.parentElement;
                 item.classList.toggle('active');
             });
+        });
+
+        const cliWin = document.getElementById('cli-window');
+
+        cliWin.addEventListener('mousemove', (e) => {
+            const rect = cliWin.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((y - centerY) / centerY) * -10;
+            const rotateY = ((x - centerX) / centerX) * 10;
+
+            cliWin.classList.add('is-hovered');
+            cliWin.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+        });
+
+        cliWin.addEventListener('mouseleave', () => {
+            cliWin.classList.remove('is-hovered');
+            cliWin.style.transition = 'transform 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease';
+            cliWin.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+        });
+
+        cliWin.addEventListener('mouseenter', () => {
+            cliWin.style.transition = 'transform 0.1s ease-out, box-shadow 0.3s ease, border-color 0.3s ease';
         });
 
         function maskIP(ip) {
