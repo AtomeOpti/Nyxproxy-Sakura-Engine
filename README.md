@@ -1,7 +1,5 @@
 <div align="center">
-  <video src="./nyxproxy-demo.mp4" controls muted loop playsinline width="760"></video>
-
-  <a href="./nyxproxy-demo.mp4">▶ Open the Nyxproxy Sakura Engine demo video</a>
+  <img src="./nyxproxy-demo.gif" alt="Nyxproxy Sakura Engine demo" width="760" />
 
   # Nyxproxy Sakura Engine
 
@@ -75,7 +73,8 @@ This repository is the **public source preview**: it documents the project’s s
 | [`scraper.py`](./scraper.py) | Public interface of the proxy discovery layer. |
 | [`index.html`](./index.html) | Product landing page and developer-facing presentation. |
 | [`image_0.png`](./image_0.png) | Visual asset used by the project interface. |
-| [`nyxproxy-demo.mp4`](./nyxproxy-demo.mp4) | Product demo video. |
+| [`nyxproxy-demo.mp4`](./nyxproxy-demo.mp4) | Original product demo video. |
+| [`nyxproxy-demo.gif`](./nyxproxy-demo.gif) | Lightweight animated demo displayed directly in this README. |
 | [`LICENSE`](./LICENSE) | MIT license for this repository. |
 
 ## Running the public preview
