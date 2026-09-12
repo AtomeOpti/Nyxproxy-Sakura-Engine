@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/a0ccbd9e-50f4-463d-967f-1b1ba657290f" alt="Nyxproxy Sakura Engine" width="760" />
+  <img src="./image_0.png" alt="Nyxproxy Sakura Engine" width="760" />
 
   # Nyxproxy Sakura Engine
 
